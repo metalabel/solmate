@@ -2,6 +2,8 @@
 
 **Modern**, **opinionated**, and **gas optimized** building blocks for **smart contract development**.
 
+> This fork is maintained by Metalabel and contains a few small opinionated changes to accommodate our needs. See METALABEL.md for more info ✌️
+
 ## Contracts
 
 ```ml

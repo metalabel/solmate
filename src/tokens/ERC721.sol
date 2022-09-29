@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
+/// @notice Data stored per-token, fits into a single storage word
+struct TokenData {
+    address owner;
+    uint16 sequenceId;
+    uint80 data;
+}
+
 /// @notice Modern, minimalist, and gas efficient ERC-721 implementation.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC721.sol)
 abstract contract ERC721 {
@@ -28,12 +35,12 @@ abstract contract ERC721 {
                       ERC721 BALANCE/OWNER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 => address) internal _ownerOf;
+    mapping(uint256 => TokenData) internal _tokenData;
 
     mapping(address => uint256) internal _balanceOf;
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
-        require((owner = _ownerOf[id]) != address(0), "NOT_MINTED");
+        require((owner = _tokenData[id].owner) != address(0), "NOT_MINTED");
     }
 
     function balanceOf(address owner) public view virtual returns (uint256) {
@@ -64,7 +71,7 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     function approve(address spender, uint256 id) public virtual {
-        address owner = _ownerOf[id];
+        address owner = _tokenData[id].owner;
 
         require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
 
@@ -84,7 +91,7 @@ abstract contract ERC721 {
         address to,
         uint256 id
     ) public virtual {
-        require(from == _ownerOf[id], "WRONG_FROM");
+        require(from == _tokenData[id].owner, "WRONG_FROM");
 
         require(to != address(0), "INVALID_RECIPIENT");
 
@@ -101,7 +108,7 @@ abstract contract ERC721 {
             _balanceOf[to]++;
         }
 
-        _ownerOf[id] = to;
+        _tokenData[id].owner = to;
 
         delete getApproved[id];
 
@@ -155,22 +162,30 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     function _mint(address to, uint256 id) internal virtual {
+        return _mint(to, id, 0, 0);
+    }
+
+    function _mint(address to, uint256 id, uint16 sequenceId, uint80 data) internal virtual {
         require(to != address(0), "INVALID_RECIPIENT");
 
-        require(_ownerOf[id] == address(0), "ALREADY_MINTED");
+        require(_tokenData[id].owner == address(0), "ALREADY_MINTED");
 
         // Counter overflow is incredibly unrealistic.
         unchecked {
             _balanceOf[to]++;
         }
 
-        _ownerOf[id] = to;
+        _tokenData[id] = TokenData({
+            owner: to,
+            sequenceId: sequenceId,
+            data: data
+        });
 
         emit Transfer(address(0), to, id);
     }
 
     function _burn(uint256 id) internal virtual {
-        address owner = _ownerOf[id];
+        address owner = _tokenData[id].owner;
 
         require(owner != address(0), "NOT_MINTED");
 
@@ -179,7 +194,7 @@ abstract contract ERC721 {
             _balanceOf[owner]--;
         }
 
-        delete _ownerOf[id];
+        delete _tokenData[id];
 
         delete getApproved[id];
 
@@ -214,6 +229,16 @@ abstract contract ERC721 {
                 ERC721TokenReceiver.onERC721Received.selector,
             "UNSAFE_RECIPIENT"
         );
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                    METALABEL ADDED FUNCTIONALITY
+    //////////////////////////////////////////////////////////////*/
+
+    function getTokenData(uint256 id) external view virtual returns (TokenData memory) {
+        TokenData memory data = _tokenData[id];
+        require(data.owner != address(0), "NOT_MINTED");
+        return data;
     }
 }
 

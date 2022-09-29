@@ -12,6 +12,10 @@ contract MockERC721 is ERC721 {
         _mint(to, tokenId);
     }
 
+    function mint(address to, uint256 tokenId, uint16 seriesId, uint80 data) public virtual {
+        _mint(to, tokenId, seriesId, data);
+    }
+
     function burn(uint256 tokenId) public virtual {
         _burn(tokenId);
     }

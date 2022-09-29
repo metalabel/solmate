@@ -724,4 +724,11 @@ contract ERC721Test is DSTestPlus {
     function testFailOwnerOfUnminted(uint256 id) public view {
         token.ownerOf(id);
     }
+
+    function testGetTokenData(uint256 id, address to, uint16 sequenceId, uint80 data) public {
+        if (to == address(0)) to = address(0xBEEF);
+        token.mint(to, id, sequenceId, data);
+        assertEq(token.getTokenData(id).sequenceId, sequenceId);
+        assertEq(token.getTokenData(id).data, data);
+    }
 }
