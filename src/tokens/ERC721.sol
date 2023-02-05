@@ -25,10 +25,6 @@ abstract contract ERC721 {
                          METADATA STORAGE/LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    string public name;
-
-    string public symbol;
-
     function tokenURI(uint256 id) public view virtual returns (string memory);
 
     /*//////////////////////////////////////////////////////////////
@@ -56,15 +52,6 @@ abstract contract ERC721 {
     mapping(uint256 => address) public getApproved;
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
-
-    /*//////////////////////////////////////////////////////////////
-                               CONSTRUCTOR
-    //////////////////////////////////////////////////////////////*/
-
-    constructor(string memory _name, string memory _symbol) {
-        name = _name;
-        symbol = _symbol;
-    }
 
     /*//////////////////////////////////////////////////////////////
                               ERC721 LOGIC
